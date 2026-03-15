@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery Surprise</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Poppins, sans-serif;
+            background: radial-gradient(circle at top, #5b3a9e, #231942 55%, #f7cad0);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center
+        }
+
+        .wrap {
+            padding: 20px
+        }
+
+        .photo {
+            display: none;
+            width: 220px;
+            background: white;
+            padding: 10px 10px 30px;
+            border-radius: 14px;
+            box-shadow: 0 20px 30px rgba(0, 0, 0, .25);
+            margin: 20px auto;
+            color: #444
+        }
+
+        .photo img {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            border-radius: 10px
+        }
+
+        .photo.show {
+            display: block;
+            animation: fade .8s
+        }
+
+        button {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            cursor: pointer;
+            margin-top: 20px
+        }
+
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(30px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div id="p1" class="photo show"><img src="foto1.png">
+            <p>ini random banget sih tapi malah lucu😭</p>
+        </div>
+        <p style="opacity:.8;margin-top:10px;">Klik lanjut pelan-pelan ya 💌</p>
+        <div id="p2" class="photo"><img src="foto2.jpg">
+            <p>MASIH INGET GAA??😭🫶</p>
+        </div>
+        <div id="p3" class="photo"><img src="foto3.jpg">
+            <p>foto ini...gtw kenapa kadang bikin senyum senyum sendiri🩷🩷</p>
+        </div>
+        <button id="nextBtn" onclick="nextPhoto()">Lanjut 💌</button>
+    </div>
+    <script>
+        let step = 1;
+        function nextPhoto() {
+            if (step === 1) { document.getElementById('p2').classList.add('show'); step++; return; }
+            if (step === 2) { document.getElementById('p3').classList.add('show'); step++; document.getElementById('nextBtn').innerText = 'ADA LAGII🩷'; return; }
+            location.href = 'final.html';
+        }
+    </script>
+</body>
+
+</html>

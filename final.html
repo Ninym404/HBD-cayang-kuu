@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Final Surprise</title>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #5b3a9e, #231942 55%, #f7cad0);
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      z-index: 2;
+      animation: fade 2s ease;
+      text-shadow: 0 0 25px rgba(255, 255, 255, 0.35);
+      position: relative;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 20px 40px;
+      border-radius: 60px;
+      backdrop-filter: blur(4px);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="fireworksCanvas"></canvas>
+  <h1>Selamat Ulang Tahun Sayang ✍️(◔◡◔)</h1>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById('fireworksCanvas');
+      const ctx = canvas.getContext('2d');
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+
+      // Particle class untuk ledakan
+      class Particle {
+        constructor(x, y, color, speed) {
+          this.x = x;
+          this.y = y;
+          this.vx = (Math.random() - 0.5) * speed;
+          this.vy = (Math.random() - 0.5) * speed - 1.2; // dorongan ke atas
+          this.size = Math.random() * 3 + 2;
+          this.color = color;
+          this.alpha = 1;
+          this.decay = 0.015 + Math.random() * 0.02;
+          this.gravity = 0.04;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.vy += this.gravity;
+          this.alpha -= this.decay;
+        }
+
+        draw() {
+          ctx.save();
+          ctx.globalAlpha = this.alpha;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 10;
+          ctx.fill();
+          ctx.restore();
+        }
+
+        isAlive() {
+          return this.alpha > 0;
+        }
+      }
+
+      // Rocket class
+      class Rocket {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = canvas.height;
+          this.vx = (Math.random() - 0.5) * 1.2;
+          this.vy = Math.random() * -9 - 7; // kecepatan naik
+          this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+          this.size = 3;
+          this.trail = [];
+        }
+
+        update() {
+          // simpan jejak
+          this.trail.push({ x: this.x, y: this.y, color: this.color });
+          if (this.trail.length > 5) this.trail.shift();
+
+          this.x += this.vx;
+          this.y += this.vy;
+          this.vy += 0.06; // gravitasi
+        }
+
+        draw() {
+          // gambar jejak
+          for (let i = 0; i < this.trail.length; i++) {
+            const p = this.trail[i];
+            ctx.save();
+            ctx.globalAlpha = i / this.trail.length;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, this.size * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 8;
+            ctx.fill();
+            ctx.restore();
+          }
+          // gambar kepala roket
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 15;
+          ctx.fill();
+          ctx.restore();
+        }
+
+        isExploded() {
+          // meledak jika mencapai puncak atau keluar layar
+          return this.vy > -1 || this.y < 30 || this.x < 0 || this.x > canvas.width;
+        }
+
+        explode() {
+          const particles = [];
+          const count = 70 + Math.floor(Math.random() * 40);
+          for (let i = 0; i < count; i++) {
+            // variasi warna
+            const hue = (parseInt(this.color.match(/\d+/)?.[0] || 0) + (Math.random() * 30 - 15)) % 360;
+            const color = `hsl(${hue}, 90%, 65%)`;
+            particles.push(new Particle(this.x, this.y, color, Math.random() * 5 + 2.5));
+          }
+          return particles;
+        }
+      }
+
+      let rockets = [];
+      let particles = [];
+
+      function createRocket() {
+        if (rockets.length < 6) {
+          rockets.push(new Rocket());
+        }
+      }
+
+      // Animasi loop
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Update dan gambar roket
+        for (let i = rockets.length - 1; i >= 0; i--) {
+          const r = rockets[i];
+          r.update();
+          r.draw();
+
+          if (r.isExploded()) {
+            particles.push(...r.explode());
+            rockets.splice(i, 1);
+          }
+        }
+
+        // Update dan gambar partikel
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.update();
+          p.draw();
+          if (!p.isAlive()) {
+            particles.splice(i, 1);
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      // Luncurkan roket secara periodik
+      setInterval(createRocket, 600);
+
+      // Luncurkan beberapa roket awal
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => createRocket(), i * 200);
+      }
+
+      // Opsional: tambahkan interaksi klik (bisa dihapus jika tidak ingin)
+      canvas.addEventListener('click', (e) => {
+        const rocket = new Rocket();
+        rocket.x = e.clientX;
+        rocket.y = e.clientY;
+        rocket.vy = -12;
+        rockets.push(rocket);
+      });
+
+      // Untuk mobile
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rocket = new Rocket();
+        rocket.x = touch.clientX;
+        rocket.y = touch.clientY;
+        rocket.vy = -12;
+        rockets.push(rocket);
+      });
+    })();
+  </script>
+</body>
+
+</html>
